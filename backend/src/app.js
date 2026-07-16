@@ -4,6 +4,8 @@ import securityMiddleware from "./middlewares/security.middleware.js";
 import globalRateLimiter from "./middlewares/rateLimit.middleware.js";
 import notFoundMiddleware from "./middlewares/notFound.middleware.js";
 import errorMiddleware from "./middlewares/error.middleware.js";
+import ApiError from "./utils/ApiError.js";
+import asyncHandler from "./utils/asyncHandler.js";
 
 const app = express();
 
@@ -18,6 +20,13 @@ app.get("/api/v1/health", (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+app.get(
+  "/api/v1/test-error",
+  asyncHandler(async () => {
+    throw new ApiError(400, "Custom error system is working.");
+  }),
+);
 
 app.use(notFoundMiddleware);
 
