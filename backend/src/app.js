@@ -1,39 +1,16 @@
 import express from "express";
-import cors from "cors";
-import helmet from "helmet";
-import compression from "compression";
-import cookieParser from "cookie-parser";
-import morgan from "morgan";
+
+import securityMiddleware from "./middlewares/security.middleware.js";
+import globalRateLimiter from "./middlewares/rateLimit.middleware.js";
+import notFoundMiddleware from "./middlewares/notFound.middleware.js";
+import errorMiddleware from "./middlewares/error.middleware.js";
 
 const app = express();
 
-// Security
-app.use(helmet());
+securityMiddleware(app);
 
-// Compression
-app.use(compression());
+app.use(globalRateLimiter);
 
-// CORS
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL,
-    credentials: true,
-  })
-);
-
-// Body Parsers
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true }));
-
-// Cookies
-app.use(cookieParser());
-
-// Logger
-if (process.env.NODE_ENV === "development") {
-  app.use(morgan("dev"));
-}
-
-// Health Check
 app.get("/api/v1/health", (req, res) => {
   res.status(200).json({
     success: true,
@@ -42,12 +19,8 @@ app.get("/api/v1/health", (req, res) => {
   });
 });
 
-// 404 Handler
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: "Route not found.",
-  });
-});
+app.use(notFoundMiddleware);
+
+app.use(errorMiddleware);
 
 export default app;
