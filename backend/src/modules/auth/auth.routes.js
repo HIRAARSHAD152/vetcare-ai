@@ -1,6 +1,10 @@
 import { Router } from "express";
 
-import { login, register , verify ,resendOtp , forgotPasswordController, resetPasswordController } from "./auth.controller.js";
+import { login, register , verify ,resendOtp , forgotPasswordController, resetPasswordController , getCurrentUser
+    
+ } from "./auth.controller.js";
+
+import protect from "../../middlewares/auth.middleware.js"; 
 
 const router = Router();
 
@@ -10,5 +14,11 @@ router.post("/verify-email", verify);
 router.post("/resend-otp", resendOtp);
 router.post("/forgot-password", forgotPasswordController);
 router.post("/reset-password", resetPasswordController);
+
+router.get(
+  "/me",
+  protect,
+  getCurrentUser,
+);
 
 export default router;

@@ -1,6 +1,6 @@
 import asyncHandler from "../../utils/asyncHandler.js";
 import successResponse from "../../utils/response.js";
-import { loginUser, registerUser  , verifyEmail , resendVerificationOtp , forgotPassword, resetPassword,} from "./auth.service.js";
+import { loginUser, registerUser  , verifyEmail , resendVerificationOtp , forgotPassword, resetPassword, } from "./auth.service.js";
 
 const register = asyncHandler(async (req, res) => {
   const result = await registerUser(req.body);
@@ -64,4 +64,16 @@ const resetPasswordController = asyncHandler(
     });
   },
 );
-export { register, login , verify   , resendOtp ,forgotPasswordController, resetPasswordController};
+
+const getCurrentUser = asyncHandler(
+  async (req, res) => {
+    return successResponse(res, {
+      message: "Authenticated user fetched successfully.",
+      data: {
+        user: req.user,
+      },
+    });
+  },
+);
+
+export { register, login , verify   , resendOtp ,forgotPasswordController, resetPasswordController, getCurrentUser} ;
