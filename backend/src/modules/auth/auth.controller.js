@@ -1,6 +1,6 @@
 import asyncHandler from "../../utils/asyncHandler.js";
 import successResponse from "../../utils/response.js";
-import { loginUser, registerUser  , verifyEmail , resendVerificationOtp , forgotPassword, resetPassword, logoutUser , refreshAccessToken} from "./auth.service.js";
+import { loginUser, registerUser  , verifyEmail , resendVerificationOtp , forgotPassword, resetPassword, logoutUser , refreshAccessToken , updateProfile , changePassword , deactivateAccount , activateAccount} from "./auth.service.js";
 import env from "../../config/env.js";
 
 const register = asyncHandler(async (req, res) => {
@@ -148,4 +148,97 @@ const logout = asyncHandler(
   },
 );
 
-export { register, login , verify   , resendOtp ,forgotPasswordController, resetPasswordController, getCurrentUser, getAdminOnly, refreshToken, logout  } ;
+const updateUserProfile = asyncHandler(
+  async (req, res) => {
+    const user = await updateProfile(
+      req.user._id,
+      req.body,
+    );
+
+    return successResponse(res, {
+      statusCode: 200,
+      message: "Profile updated successfully.",
+      data: {
+        user,
+      },
+    });
+  },
+);
+
+const changeUserPassword =
+  asyncHandler(
+    async (req, res) => {
+      const user =
+        await changePassword(
+          req.user._id,
+          req.body,
+        );
+
+      res.clearCookie(
+        "refreshToken",
+        {
+          httpOnly: true,
+          secure:
+            env.NODE_ENV ===
+            "production",
+          sameSite: "strict",
+        },
+      );
+
+      return successResponse(res, {
+        statusCode: 200,
+        message:
+          "Password changed successfully. Please log in again.",
+        data: {
+          user,
+        },
+      });
+    },
+  );
+
+const deactivateUserAccount =
+  asyncHandler(
+    async (req, res) => {
+      await deactivateAccount(
+        req.user._id,
+      );
+
+      res.clearCookie(
+        "refreshToken",
+        {
+          httpOnly: true,
+          secure:
+            env.NODE_ENV ===
+            "production",
+          sameSite: "strict",
+        },
+      );
+
+      return successResponse(res, {
+        statusCode: 200,
+        message:
+          "Account deactivated successfully.",
+      });
+    },
+  );
+
+const activateUserAccount =
+  asyncHandler(
+    async (req, res) => {
+      const user =
+        await activateAccount(
+          req.params.userId,
+        );
+
+      return successResponse(res, {
+        statusCode: 200,
+        message:
+          "Account reactivated successfully.",
+        data: {
+          user,
+        },
+      });
+    },
+  );
+
+export { register, login , verify   , resendOtp ,forgotPasswordController, resetPasswordController, getCurrentUser, getAdminOnly, refreshToken, logout  , updateUserProfile , changeUserPassword , deactivateUserAccount , activateUserAccount }; ;

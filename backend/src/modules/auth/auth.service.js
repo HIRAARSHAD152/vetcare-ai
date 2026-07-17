@@ -399,4 +399,113 @@ const logoutUser = async (refreshToken) => {
   }
 };
 
-export { registerUser, loginUser , verifyEmail, resendVerificationOtp, forgotPassword, resetPassword, refreshAccessToken, logoutUser };
+const updateProfile = async (
+  userId,
+  { name },
+) => {
+  if (!name || !name.trim()) {
+    throw new ApiError(
+      400,
+      "Name is required.",
+    );
+  }
+
+  const user =
+    await userRepository.updateProfile(
+      userId,
+      {
+        name: name.trim(),
+      },
+    );
+
+  if (!user) {
+    throw new ApiError(
+      404,
+      "User not found.",
+    );
+  }
+
+  return sanitizeUser(user);
+};
+
+const changePassword = async (
+  userId,
+  {
+    currentPassword,
+    newPassword,
+  },
+) => {
+  const user =
+    await userRepository.findByIdWithPassword(
+      userId,
+    );
+
+  if (!user) {
+    throw new ApiError(
+      404,
+      "User not found.",
+    );
+  }
+
+  const isPasswordValid =
+    await user.comparePassword(
+      currentPassword,
+    );
+
+  if (!isPasswordValid) {
+    throw new ApiError(
+      401,
+      "Current password is incorrect.",
+    );
+  }
+
+  if (
+    currentPassword === newPassword
+  ) {
+    throw new ApiError(
+      400,
+      "New password must be different from current password.",
+    );
+  }
+
+  const updatedUser =
+    await userRepository.updatePassword(
+      userId,
+      newPassword,
+    );
+
+  return sanitizeUser(updatedUser);
+};
+
+const deactivateAccount = async (userId) => {
+  const user =
+    await userRepository.deactivateAccount(
+      userId,
+    );
+
+  if (!user) {
+    throw new ApiError(
+      404,
+      "User not found.",
+    );
+  }
+
+  return sanitizeUser(user);
+};
+
+const activateAccount = async (userId) => {
+  const user =
+    await userRepository.activateAccount(
+      userId,
+    );
+
+  if (!user) {
+    throw new ApiError(
+      404,
+      "User not found.",
+    );
+  }
+
+  return sanitizeUser(user);
+};
+export { registerUser, loginUser , verifyEmail, resendVerificationOtp, forgotPassword, resetPassword, refreshAccessToken, logoutUser, updateProfile, changePassword, deactivateAccount, activateAccount };

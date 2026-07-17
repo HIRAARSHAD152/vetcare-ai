@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { login, register , verify ,resendOtp , forgotPasswordController, resetPasswordController , getCurrentUser , getAdminOnly , refreshToken, logout } from "./auth.controller.js";
+import { login, register , verify ,resendOtp , forgotPasswordController, resetPasswordController , getCurrentUser , getAdminOnly , refreshToken, logout , updateUserProfile  , changeUserPassword , deactivateUserAccount , activateUserAccount} from "./auth.controller.js";
 
 import protect from "../../middlewares/auth.middleware.js";
 import authorizeRoles from "../../middlewares/role.middleware.js"; 
@@ -35,6 +35,31 @@ router.post(
 router.post(
   "/logout",
   logout,
+);
+
+router.patch(
+  "/profile",
+  protect,
+  updateUserProfile,
+);
+
+router.patch(
+  "/change-password",
+  protect,
+  changeUserPassword,
+);
+
+router.patch(
+  "/deactivate",
+  protect,
+  deactivateUserAccount,
+);
+
+router.patch(
+  "/users/:userId/activate",
+  protect,
+  authorizeRoles("admin"),
+  activateUserAccount,
 );
 
 export default router;

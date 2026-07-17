@@ -162,6 +162,63 @@ async clearRefreshToken(userId) {
   );
 }
 
+async updateProfile(userId, updateData) {
+  return this.model
+    .findByIdAndUpdate(
+      userId,
+      updateData,
+      {
+        returnDocument: "after",
+        runValidators: true,
+      },
+    )
+    .select("-password -refreshToken");
+}
+
+async findByIdWithPassword(userId) {
+  return this.model
+    .findById(userId)
+    .select("+password");
+}
+
+async updatePassword(userId, newPassword) {
+  const user = await this.model.findById(userId);
+
+  if (!user) {
+    return null;
+  }
+
+  user.password = newPassword;
+  user.refreshToken = undefined;
+
+  return user.save();
+}
+
+async deactivateAccount(userId) {
+  return this.model.findByIdAndUpdate(
+    userId,
+    {
+      isActive: false,
+      refreshToken: undefined,
+    },
+    {
+      returnDocument: "after",
+    },
+  );
+}
+
+async activateAccount(userId) {
+  return this.model.findByIdAndUpdate(
+    userId,
+    {
+      isActive: true,
+    },
+    {
+      returnDocument: "after",
+    },
+  );
+}
+
 }
 
 const userRepository = new UserRepository();
