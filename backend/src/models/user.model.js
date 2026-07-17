@@ -68,6 +68,11 @@ passwordResetOtpExpiresAt: {
   select: false,
 },
 
+refreshToken: {
+  type: String,
+  select: false,
+},
+
     lastLoginAt: {
       type: Date,
       default: null,

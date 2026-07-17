@@ -1,6 +1,7 @@
 import asyncHandler from "../../utils/asyncHandler.js";
 import successResponse from "../../utils/response.js";
-import { loginUser, registerUser  , verifyEmail , resendVerificationOtp , forgotPassword, resetPassword, } from "./auth.service.js";
+import { loginUser, registerUser  , verifyEmail , resendVerificationOtp , forgotPassword, resetPassword, logoutUser , refreshAccessToken} from "./auth.service.js";
+import env from "../../config/env.js";
 
 const register = asyncHandler(async (req, res) => {
   const result = await registerUser(req.body);
@@ -15,10 +16,19 @@ const register = asyncHandler(async (req, res) => {
 const login = asyncHandler(async (req, res) => {
   const result = await loginUser(req.body);
 
+  res.cookie("refreshToken", result.refreshToken, {
+    httpOnly: true,
+    secure: env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+  });
+
+  const { refreshToken, ...responseData } = result;
+
   return successResponse(res, {
     statusCode: 200,
     message: "Login successful.",
-    data: result,
+    data: responseData,
   });
 });
 
@@ -87,4 +97,55 @@ const getAdminOnly = asyncHandler(
   },
 );
 
-export { register, login , verify   , resendOtp ,forgotPasswordController, resetPasswordController, getCurrentUser, getAdminOnly} ;
+const refreshToken = asyncHandler(
+  async (req, res) => {
+    const currentRefreshToken =
+      req.cookies.refreshToken;
+
+    const result = await refreshAccessToken(
+      currentRefreshToken,
+    );
+
+    res.cookie(
+      "refreshToken",
+      result.refreshToken,
+      {
+        httpOnly: true,
+        secure: env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge:
+          30 * 24 * 60 * 60 * 1000,
+      },
+    );
+
+    return successResponse(res, {
+      statusCode: 200,
+      message: "Access token refreshed successfully.",
+      data: {
+        accessToken: result.accessToken,
+      },
+    });
+  },
+);
+
+const logout = asyncHandler(
+  async (req, res) => {
+    const refreshToken =
+      req.cookies.refreshToken;
+
+    await logoutUser(refreshToken);
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
+
+    return successResponse(res, {
+      statusCode: 200,
+      message: "Logged out successfully.",
+    });
+  },
+);
+
+export { register, login , verify   , resendOtp ,forgotPasswordController, resetPasswordController, getCurrentUser, getAdminOnly, refreshToken, logout  } ;

@@ -1,8 +1,13 @@
 import ApiError from "../../utils/ApiError.js";
-import { generateToken } from "../../utils/jwt.js";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyToken
+} from "../../utils/jwt.js";
 import userRepository from "../../repositories/user.repository.js";
 import {   generateOtp,   hashOtp, } from "../../utils/otp.js";
 import {  sendVerificationOtpEmail, sendPasswordResetOtpEmail } from "../../services/email.service.js";
+
 
 const sanitizeUser = (user) => ({
   id: user._id,
@@ -85,11 +90,11 @@ const loginUser = async ({ email, password }) => {
   }
 
   if (!user.isVerified) {
-  throw new ApiError(
-    403,
-    "Please verify your email before logging in.",
-  );
-}
+    throw new ApiError(
+      403,
+      "Please verify your email before logging in.",
+    );
+  }
 
   const isPasswordValid = await user.comparePassword(password);
 
@@ -99,14 +104,24 @@ const loginUser = async ({ email, password }) => {
 
   const updatedUser = await userRepository.updateLastLogin(user._id);
 
-  const token = generateToken({
+  const accessToken = generateAccessToken({
     userId: user._id.toString(),
     role: user.role,
   });
 
+  const refreshToken = generateRefreshToken({
+    userId: user._id.toString(),
+  });
+
+  await userRepository.saveRefreshToken(
+    user._id,
+    refreshToken,
+  );
+
   return {
     user: sanitizeUser(updatedUser),
-    token,
+    accessToken,
+    refreshToken,
   };
 };
 
@@ -311,4 +326,77 @@ const resetPassword = async ({
   };
 };
 
-export { registerUser, loginUser , verifyEmail, resendVerificationOtp, forgotPassword, resetPassword };
+const refreshAccessToken = async (refreshToken) => {
+  if (!refreshToken) {
+    throw new ApiError(
+      401,
+      "Refresh token is required.",
+    );
+  }
+
+  let decoded;
+
+  try {
+    decoded = verifyToken(refreshToken);
+  } catch {
+    throw new ApiError(
+      401,
+      "Invalid or expired refresh token.",
+    );
+  }
+
+  const user = await userRepository.findByRefreshToken(
+    refreshToken,
+  );
+
+  if (!user) {
+    throw new ApiError(
+      401,
+      "Refresh token is invalid or revoked.",
+    );
+  }
+
+  if (!user.isActive) {
+    throw new ApiError(
+      403,
+      "Your account is inactive.",
+    );
+  }
+
+  const newAccessToken = generateAccessToken({
+    userId: user._id.toString(),
+    role: user.role,
+  });
+
+  const newRefreshToken = generateRefreshToken({
+    userId: user._id.toString(),
+  });
+
+  await userRepository.saveRefreshToken(
+    user._id,
+    newRefreshToken,
+  );
+
+  return {
+    accessToken: newAccessToken,
+    refreshToken: newRefreshToken,
+  };
+};
+
+const logoutUser = async (refreshToken) => {
+  if (!refreshToken) {
+    return;
+  }
+
+  const user = await userRepository.findByRefreshToken(
+    refreshToken,
+  );
+
+  if (user) {
+    await userRepository.clearRefreshToken(
+      user._id,
+    );
+  }
+};
+
+export { registerUser, loginUser , verifyEmail, resendVerificationOtp, forgotPassword, resetPassword, refreshAccessToken, logoutUser };

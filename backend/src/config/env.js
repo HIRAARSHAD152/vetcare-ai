@@ -36,6 +36,9 @@ const env = cleanEnv(process.env, {
   SMTP_PASS: str(),
 
   EMAIL_FROM: str(),
+
+  JWT_REFRESH_EXPIRES_IN: str({default: "30d",}),
+  
 });
 
 export default env;

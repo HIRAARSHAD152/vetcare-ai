@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { login, register , verify ,resendOtp , forgotPasswordController, resetPasswordController , getCurrentUser , getAdminOnly } from "./auth.controller.js";
+import { login, register , verify ,resendOtp , forgotPasswordController, resetPasswordController , getCurrentUser , getAdminOnly , refreshToken, logout } from "./auth.controller.js";
 
 import protect from "../../middlewares/auth.middleware.js";
 import authorizeRoles from "../../middlewares/role.middleware.js"; 
@@ -25,6 +25,16 @@ router.get(
   protect,
   authorizeRoles("admin"),
   getAdminOnly,
+);
+
+router.post(
+  "/refresh-token",
+  refreshToken,
+);
+
+router.post(
+  "/logout",
+  logout,
 );
 
 export default router;

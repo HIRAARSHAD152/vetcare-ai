@@ -130,6 +130,38 @@ async updatePassword(userId, password) {
   return user.save();
 }
 
+async saveRefreshToken(userId, refreshToken) {
+  return this.model.findByIdAndUpdate(
+    userId,
+    {
+      refreshToken,
+    },
+    {
+      returnDocument: "after",
+    },
+  );
+}
+
+async findByRefreshToken(refreshToken) {
+  return this.model
+    .findOne({ refreshToken })
+    .select("+refreshToken");
+}
+
+async clearRefreshToken(userId) {
+  return this.model.findByIdAndUpdate(
+    userId,
+    {
+      $unset: {
+        refreshToken: 1,
+      },
+    },
+    {
+      returnDocument: "after",
+    },
+  );
+}
+
 }
 
 const userRepository = new UserRepository();
