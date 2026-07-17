@@ -65,6 +65,14 @@ async verifyUser(userId) {
   );
 }
 
+async findByEmailWithVerificationData(email) {
+  return this.model
+    .findOne({ email: email.toLowerCase() })
+    .select(
+      "+verificationOtp +verificationOtpExpiresAt",
+    );
+}
+
 }
 
 const userRepository = new UserRepository();

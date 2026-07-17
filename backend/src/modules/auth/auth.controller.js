@@ -1,6 +1,6 @@
 import asyncHandler from "../../utils/asyncHandler.js";
 import successResponse from "../../utils/response.js";
-import { loginUser, registerUser  , verifyEmail} from "./auth.service.js";
+import { loginUser, registerUser  , verifyEmail , resendVerificationOtp} from "./auth.service.js";
 
 const register = asyncHandler(async (req, res) => {
   const result = await registerUser(req.body);
@@ -31,4 +31,16 @@ const verify = asyncHandler(async (req, res) => {
   });
 });
 
-export { register, login , verify };
+const resendOtp = asyncHandler(async (req, res) => {
+  const result = await resendVerificationOtp(
+    req.body,
+  );
+
+  return successResponse(res, {
+    message: "A new verification OTP has been sent.",
+    data: result,
+  });
+});
+
+
+export { register, login , verify   , resendOtp };

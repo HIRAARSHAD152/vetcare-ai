@@ -3,6 +3,7 @@ import { generateToken } from "../../utils/jwt.js";
 import userRepository from "../../repositories/user.repository.js";
 import {   generateOtp,   hashOtp, } from "../../utils/otp.js";
 import {  sendVerificationOtpEmail,} from "../../services/email.service.js";
+// import {   generateOtp,  hashOtp, } from "../../utils/otp.js";
 
 const sanitizeUser = (user) => ({
   id: user._id,
@@ -165,4 +166,51 @@ const verifyEmail = async ({ email, otp }) => {
   };
 };
 
-export { registerUser, loginUser , verifyEmail };
+const resendVerificationOtp = async ({ email }) => {
+  const normalizedEmail = email.toLowerCase().trim();
+
+  const user =
+    await userRepository.findByEmailWithVerificationData(
+      normalizedEmail,
+    );
+
+  if (!user) {
+    throw new ApiError(
+      404,
+      "User not found.",
+    );
+  }
+
+  if (user.isVerified) {
+    throw new ApiError(
+      400,
+      "Email is already verified.",
+    );
+  }
+
+  const otp = generateOtp();
+
+  const hashedOtp = hashOtp(otp);
+
+  const expiresAt = new Date(
+    Date.now() + 10 * 60 * 1000,
+  );
+
+  await userRepository.saveVerificationOtp(
+    user._id,
+    hashedOtp,
+    expiresAt,
+  );
+
+  await sendVerificationOtpEmail({
+    email: user.email,
+    name: user.name,
+    otp,
+  });
+
+  return {
+    email: user.email,
+  };
+};
+
+export { registerUser, loginUser , verifyEmail, resendVerificationOtp };

@@ -1,11 +1,12 @@
 import { Router } from "express";
 
-import { login, register , verify } from "./auth.controller.js";
+import { login, register , verify ,resendOtp  } from "./auth.controller.js";
 
 const router = Router();
 
 router.post("/register", register);
 router.post("/login", login);
 router.post("/verify-email", verify);
+router.post("/resend-otp", resendOtp);
 
 export default router;
