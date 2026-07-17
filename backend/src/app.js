@@ -8,6 +8,9 @@ import ApiError from "./utils/ApiError.js";
 import asyncHandler from "./utils/asyncHandler.js";
 
 
+// Routes
+import authRoutes from "./modules/auth/auth.routes.js";
+
 const app = express();
 
 securityMiddleware(app);
@@ -28,6 +31,8 @@ app.get(
     throw new ApiError(400, "Custom error system is working.");
   }),
 );
+
+app.use("/api/v1/auth", authRoutes);
 
 app.use(notFoundMiddleware);
 

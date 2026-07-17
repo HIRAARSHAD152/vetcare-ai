@@ -19,10 +19,52 @@ class UserRepository extends BaseRepository {
         lastLoginAt: new Date(),
       },
       {
-        new: true,
+        returnDocument: "after",
       },
     );
   }
+
+async findByIdWithVerificationData(userId) {
+  return this.model
+    .findById(userId)
+    .select(
+      "+verificationOtp +verificationOtpExpiresAt",
+    );
+}
+
+async saveVerificationOtp(
+  userId,
+  hashedOtp,
+  expiresAt,
+) {
+  return this.model.findByIdAndUpdate(
+    userId,
+    {
+      verificationOtp: hashedOtp,
+      verificationOtpExpiresAt: expiresAt,
+    },
+    {
+     returnDocument: "after",
+    },
+  );
+}
+
+async verifyUser(userId) {
+  return this.model.findByIdAndUpdate(
+    userId,
+    {
+      isVerified: true,
+      $unset: {
+        verificationOtp: 1,
+        verificationOtpExpiresAt: 1,
+      },
+    },
+    {
+     returnDocument: "after",
+    },
+  );
+}
+
 }
 
 const userRepository = new UserRepository();

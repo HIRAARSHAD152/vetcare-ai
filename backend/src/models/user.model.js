@@ -22,12 +22,12 @@ const userSchema = new mongoose.Schema(
       index: true,
     },
 
-    password: {
-      type: String,
-      required: [true, "Password is required"],
-      minlength: [8, "Password must be at least 8 characters"],
-      select: false,
-    },
+   password: {
+  type: String,
+  required: [true, "Password is required"],
+  minlength: [8, "Password must be at least 8 characters"],
+  select: false,
+},
 
     role: {
       type: String,
@@ -42,6 +42,22 @@ const userSchema = new mongoose.Schema(
       index: true,
     },
 
+isVerified: {
+  type: Boolean,
+  default: false,
+  index: true,
+},
+
+verificationOtp: {
+  type: String,
+  select: false,
+},
+
+verificationOtpExpiresAt: {
+  type: Date,
+  select: false,
+},
+
     lastLoginAt: {
       type: Date,
       default: null,
@@ -50,16 +66,14 @@ const userSchema = new mongoose.Schema(
   baseSchemaOptions,
 );
 
-userSchema.pre("save", async function (next) {
+userSchema.pre("save", async function () {
   if (!this.isModified("password")) {
-    return next();
+    return;
   }
 
   const salt = await bcrypt.genSalt(12);
 
   this.password = await bcrypt.hash(this.password, salt);
-
-  next();
 });
 
 userSchema.methods.comparePassword = function (candidatePassword) {
