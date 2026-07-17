@@ -115,6 +115,21 @@ async clearPasswordResetOtp(userId) {
   );
 }
 
+async updatePassword(userId, password) {
+  const user = await this.model.findById(userId);
+
+  if (!user) {
+    return null;
+  }
+
+  user.password = password;
+
+  user.passwordResetOtp = undefined;
+  user.passwordResetOtpExpiresAt = undefined;
+
+  return user.save();
+}
+
 }
 
 const userRepository = new UserRepository();

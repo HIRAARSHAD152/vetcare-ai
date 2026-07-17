@@ -251,4 +251,64 @@ const forgotPassword = async ({ email }) => {
   };
 };
 
-export { registerUser, loginUser , verifyEmail, resendVerificationOtp, forgotPassword  };
+const resetPassword = async ({
+  email,
+  otp,
+  newPassword,
+}) => {
+  const normalizedEmail = email.toLowerCase().trim();
+
+  const user =
+    await userRepository.findByEmailWithResetData(
+      normalizedEmail,
+    );
+
+  if (!user) {
+    throw new ApiError(
+      404,
+      "No account found with this email.",
+    );
+  }
+
+  if (
+    !user.passwordResetOtp ||
+    !user.passwordResetOtpExpiresAt
+  ) {
+    throw new ApiError(
+      400,
+      "Password reset OTP not found.",
+    );
+  }
+
+  if (
+    user.passwordResetOtpExpiresAt < new Date()
+  ) {
+    throw new ApiError(
+      400,
+      "Password reset OTP has expired.",
+    );
+  }
+
+  const hashedOtp = hashOtp(otp);
+
+  if (
+    hashedOtp !== user.passwordResetOtp
+  ) {
+    throw new ApiError(
+      400,
+      "Invalid password reset OTP.",
+    );
+  }
+
+  const updatedUser =
+    await userRepository.updatePassword(
+      user._id,
+      newPassword,
+    );
+
+  return {
+    email: updatedUser.email,
+  };
+};
+
+export { registerUser, loginUser , verifyEmail, resendVerificationOtp, forgotPassword, resetPassword };
