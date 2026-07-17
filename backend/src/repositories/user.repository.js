@@ -73,6 +73,48 @@ async findByEmailWithVerificationData(email) {
     );
 }
 
+async findByEmailWithResetData(email) {
+  return this.model
+    .findOne({
+      email: email.toLowerCase(),
+    })
+    .select(
+      "+passwordResetOtp +passwordResetOtpExpiresAt",
+    );
+}
+
+async savePasswordResetOtp(
+  userId,
+  hashedOtp,
+  expiresAt,
+) {
+  return this.model.findByIdAndUpdate(
+    userId,
+    {
+      passwordResetOtp: hashedOtp,
+      passwordResetOtpExpiresAt: expiresAt,
+    },
+    {
+      returnDocument: "after",
+    },
+  );
+}
+
+async clearPasswordResetOtp(userId) {
+  return this.model.findByIdAndUpdate(
+    userId,
+    {
+      $unset: {
+        passwordResetOtp: 1,
+        passwordResetOtpExpiresAt: 1,
+      },
+    },
+    {
+      returnDocument: "after",
+    },
+  );
+}
+
 }
 
 const userRepository = new UserRepository();

@@ -58,6 +58,16 @@ verificationOtpExpiresAt: {
   select: false,
 },
 
+passwordResetOtp: {
+  type: String,
+  select: false,
+},
+
+passwordResetOtpExpiresAt: {
+  type: Date,
+  select: false,
+},
+
     lastLoginAt: {
       type: Date,
       default: null,

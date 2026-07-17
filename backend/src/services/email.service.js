@@ -21,4 +21,24 @@ const sendVerificationOtpEmail = async ({
   });
 };
 
-export { sendVerificationOtpEmail };
+const sendPasswordResetOtpEmail = async ({
+  email,
+  name,
+  otp,
+}) => {
+  await emailTransporter.sendMail({
+    from: env.EMAIL_FROM,
+    to: email,
+    subject: "VetCare AI Password Reset OTP",
+    text: `Hello ${name}, your password reset OTP is ${otp}. It expires in 10 minutes.`,
+    html: `
+      <h2>Password Reset Request</h2>
+      <p>Hello ${name},</p>
+      <p>Your password reset OTP is:</p>
+      <h1>${otp}</h1>
+      <p>This OTP expires in 10 minutes.</p>
+    `,
+  });
+};
+
+export { sendVerificationOtpEmail, sendPasswordResetOtpEmail };

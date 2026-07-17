@@ -1,6 +1,6 @@
 import asyncHandler from "../../utils/asyncHandler.js";
 import successResponse from "../../utils/response.js";
-import { loginUser, registerUser  , verifyEmail , resendVerificationOtp} from "./auth.service.js";
+import { loginUser, registerUser  , verifyEmail , resendVerificationOtp , forgotPassword,} from "./auth.service.js";
 
 const register = asyncHandler(async (req, res) => {
   const result = await registerUser(req.body);
@@ -42,5 +42,16 @@ const resendOtp = asyncHandler(async (req, res) => {
   });
 });
 
+const forgotPasswordController = asyncHandler(
+  async (req, res) => {
+    const result = await forgotPassword(req.body);
 
-export { register, login , verify   , resendOtp };
+    return successResponse(res, {
+      message:
+        "Password reset OTP has been sent to your email.",
+      data: result,
+    });
+  },
+);
+
+export { register, login , verify   , resendOtp ,forgotPasswordController};

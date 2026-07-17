@@ -2,8 +2,7 @@ import ApiError from "../../utils/ApiError.js";
 import { generateToken } from "../../utils/jwt.js";
 import userRepository from "../../repositories/user.repository.js";
 import {   generateOtp,   hashOtp, } from "../../utils/otp.js";
-import {  sendVerificationOtpEmail,} from "../../services/email.service.js";
-// import {   generateOtp,  hashOtp, } from "../../utils/otp.js";
+import {  sendVerificationOtpEmail, sendPasswordResetOtpEmail } from "../../services/email.service.js";
 
 const sanitizeUser = (user) => ({
   id: user._id,
@@ -111,7 +110,6 @@ const loginUser = async ({ email, password }) => {
   };
 };
 
-
 const verifyEmail = async ({ email, otp }) => {
   const normalizedEmail = email.toLowerCase().trim();
 
@@ -213,4 +211,44 @@ const resendVerificationOtp = async ({ email }) => {
   };
 };
 
-export { registerUser, loginUser , verifyEmail, resendVerificationOtp };
+const forgotPassword = async ({ email }) => {
+  const normalizedEmail = email.toLowerCase().trim();
+
+  const user =
+    await userRepository.findByEmailWithResetData(
+      normalizedEmail,
+    );
+
+  if (!user) {
+    throw new ApiError(
+      404,
+      "No account found with this email.",
+    );
+  }
+
+  const otp = generateOtp();
+
+  const hashedOtp = hashOtp(otp);
+
+  const expiresAt = new Date(
+    Date.now() + 10 * 60 * 1000,
+  );
+
+  await userRepository.savePasswordResetOtp(
+    user._id,
+    hashedOtp,
+    expiresAt,
+  );
+
+  await sendPasswordResetOtpEmail({
+    email: user.email,
+    name: user.name,
+    otp,
+  });
+
+  return {
+    email: user.email,
+  };
+};
+
+export { registerUser, loginUser , verifyEmail, resendVerificationOtp, forgotPassword  };
