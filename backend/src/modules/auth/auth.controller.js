@@ -76,4 +76,15 @@ const getCurrentUser = asyncHandler(
   },
 );
 
-export { register, login , verify   , resendOtp ,forgotPasswordController, resetPasswordController, getCurrentUser} ;
+const getAdminOnly = asyncHandler(
+  async (req, res) => {
+    return successResponse(res, {
+      message: "Admin-only route accessed successfully.",
+      data: {
+        user: req.user,
+      },
+    });
+  },
+);
+
+export { register, login , verify   , resendOtp ,forgotPasswordController, resetPasswordController, getCurrentUser, getAdminOnly} ;

@@ -1,10 +1,9 @@
 import { Router } from "express";
 
-import { login, register , verify ,resendOtp , forgotPasswordController, resetPasswordController , getCurrentUser
-    
- } from "./auth.controller.js";
+import { login, register , verify ,resendOtp , forgotPasswordController, resetPasswordController , getCurrentUser , getAdminOnly } from "./auth.controller.js";
 
-import protect from "../../middlewares/auth.middleware.js"; 
+import protect from "../../middlewares/auth.middleware.js";
+import authorizeRoles from "../../middlewares/role.middleware.js"; 
 
 const router = Router();
 
@@ -19,6 +18,13 @@ router.get(
   "/me",
   protect,
   getCurrentUser,
+);
+
+router.get(
+  "/admin-only",
+  protect,
+  authorizeRoles("admin"),
+  getAdminOnly,
 );
 
 export default router;
