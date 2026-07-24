@@ -1,5 +1,6 @@
 import ApiError from "../../utils/ApiError.js";
 import userRepository from "../../repositories/user.repository.js";
+import {   createAuditLog, } from "../../repositories/auditLog.repository.js";
 
 const getAllUsers = async ({
   page,
@@ -37,96 +38,122 @@ const getUserById = async (userId) => {
   return user;
 };
 
+
 const updateUserStatus = async (
-  userId,
-  isActive,
-  adminUserId,
+userId,
+isActive,
+adminUserId,
 ) => {
-  if (
-    userId.toString() ===
-    adminUserId.toString()
-  ) {
-    throw new ApiError(
-      400,
-      "You cannot change your own account status.",
-    );
-  }
+if (
+userId.toString() ===
+adminUserId.toString()
+) {
+throw new ApiError(
+400,
+"You cannot change your own account status.",
+);
+}
 
-  const user =
-    await userRepository.updateUserStatus(
-      userId,
-      isActive,
-    );
+const user =
+await userRepository.updateUserStatus(
+userId,
+isActive,
+);
 
-  if (!user) {
-    throw new ApiError(
-      404,
-      "User not found.",
-    );
-  }
+if (!user) {
+throw new ApiError(
+404,
+"User not found.",
+);
+}
 
-  return user;
+await createAuditLog({
+actor: adminUserId,
+action: "USER_STATUS_UPDATED",
+targetUser: userId,
+metadata: {
+isActive,
+},
+});
+
+return user;
 };
 
 const updateUserRole = async (
-  userId,
-  role,
-  adminUserId,
+userId,
+role,
+adminUserId,
 ) => {
-  if (
-    userId.toString() ===
-    adminUserId.toString()
-  ) {
-    throw new ApiError(
-      400,
-      "You cannot change your own role.",
-    );
-  }
+if (
+userId.toString() ===
+adminUserId.toString()
+) {
+throw new ApiError(
+400,
+"You cannot change your own role.",
+);
+}
 
-  const user =
-    await userRepository.updateUserRole(
-      userId,
-      role,
-    );
+const user =
+await userRepository.updateUserRole(
+userId,
+role,
+);
 
-  if (!user) {
-    throw new ApiError(
-      404,
-      "User not found.",
-    );
-  }
+if (!user) {
+throw new ApiError(
+404,
+"User not found.",
+);
+}
 
-  return user;
+await createAuditLog({
+actor: adminUserId,
+action: "USER_ROLE_UPDATED",
+targetUser: userId,
+metadata: {
+role,
+},
+});
+
+return user;
 };
 
 const deleteUser = async (
-  userId,
-  adminUserId,
+userId,
+adminUserId,
 ) => {
-  if (
-    userId.toString() ===
-    adminUserId.toString()
-  ) {
-    throw new ApiError(
-      400,
-      "You cannot delete your own account.",
-    );
-  }
+if (
+userId.toString() ===
+adminUserId.toString()
+) {
+throw new ApiError(
+400,
+"You cannot delete your own account.",
+);
+}
 
-  const user =
-    await userRepository.deleteUser(
-      userId,
-    );
+const user =
+await userRepository.deleteUser(
+userId,
+);
 
-  if (!user) {
-    throw new ApiError(
-      404,
-      "User not found.",
-    );
-  }
+if (!user) {
+throw new ApiError(
+404,
+"User not found.",
+);
+}
 
-  return user;
+await createAuditLog({
+actor: adminUserId,
+action: "USER_DELETED",
+targetUser: userId,
+});
+
+return user;
 };
+
 
 export {
   getAllUsers,
