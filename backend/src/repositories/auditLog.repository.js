@@ -31,7 +31,53 @@ const findByTargetUser = async (targetUser) => {
     });
 };
 
+const findAll = async ({
+  page = 1,
+  limit = 10,
+  action,
+}) => {
+  const skip = (page - 1) * limit;
+
+  const filter = {};
+
+  if (action) {
+    filter.action = action;
+  }
+
+  const [logs, total] = await Promise.all([
+    AuditLog.find(filter)
+      .populate(
+        "actor",
+        "name email role",
+      )
+      .populate(
+        "targetUser",
+        "name email role",
+      )
+      .sort({
+        createdAt: -1,
+      })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+
+    AuditLog.countDocuments(filter),
+  ]);
+
+  return {
+    logs,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(
+      total / limit,
+    ),
+  };
+};
+
+
 export {
   createAuditLog,
   findByTargetUser,
+  findAll
 };

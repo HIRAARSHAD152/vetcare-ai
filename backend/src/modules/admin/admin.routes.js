@@ -16,6 +16,7 @@ import {
   changeUserStatus,
   changeUserRole,
   removeUser,
+  getLogs
 } from "./admin.controller.js";
 
 const router =
@@ -29,6 +30,11 @@ router.use(
 router.get(
   "/users",
   getUsers,
+);
+
+router.get(
+  "/audit-logs",
+  getLogs,
 );
 
 router.get(

@@ -1,6 +1,6 @@
 import ApiError from "../../utils/ApiError.js";
 import userRepository from "../../repositories/user.repository.js";
-import {   createAuditLog, } from "../../repositories/auditLog.repository.js";
+import {   createAuditLog, findAll as findAllAuditLogs } from "../../repositories/auditLog.repository.js";
 
 const getAllUsers = async ({
   page,
@@ -154,6 +154,17 @@ targetUser: userId,
 return user;
 };
 
+const getAuditLogs = async ({
+  page,
+  limit,
+  action,
+}) => {
+  return findAllAuditLogs({
+    page,
+    limit,
+    action,
+  });
+};
 
 export {
   getAllUsers,
@@ -161,4 +172,5 @@ export {
   updateUserStatus,
   updateUserRole,
   deleteUser,
+  getAuditLogs
 };

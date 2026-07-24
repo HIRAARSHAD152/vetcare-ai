@@ -7,6 +7,7 @@ import {
    updateUserStatus,
   updateUserRole,
   deleteUser,
+  getAuditLogs
 } from "./admin.service.js";
 
 const getUsers = asyncHandler(
@@ -134,10 +135,48 @@ const removeUser = asyncHandler(
   },
 );
 
+const getLogs = asyncHandler(
+  async (req, res) => {
+    const {
+      page = 1,
+      limit = 10,
+      action,
+    } = req.query;
+
+    const safePage = Math.max(
+      Number(page) || 1,
+      1,
+    );
+
+    const safeLimit = Math.min(
+      Math.max(
+        Number(limit) || 10,
+        1,
+      ),
+      100,
+    );
+
+    const result =
+      await getAuditLogs({
+        page: safePage,
+        limit: safeLimit,
+        action,
+      });
+
+    return successResponse(res, {
+      statusCode: 200,
+      message:
+        "Audit logs fetched successfully.",
+      data: result,
+    });
+  },
+);
+
 export {
   getUsers,
   getUser,
   changeUserStatus,
   changeUserRole,
   removeUser,
+  getLogs
 };
