@@ -40,7 +40,18 @@ const getUserById = async (userId) => {
 const updateUserStatus = async (
   userId,
   isActive,
+  adminUserId,
 ) => {
+  if (
+    userId.toString() ===
+    adminUserId.toString()
+  ) {
+    throw new ApiError(
+      400,
+      "You cannot change your own account status.",
+    );
+  }
+
   const user =
     await userRepository.updateUserStatus(
       userId,
@@ -60,7 +71,18 @@ const updateUserStatus = async (
 const updateUserRole = async (
   userId,
   role,
+  adminUserId,
 ) => {
+  if (
+    userId.toString() ===
+    adminUserId.toString()
+  ) {
+    throw new ApiError(
+      400,
+      "You cannot change your own role.",
+    );
+  }
+
   const user =
     await userRepository.updateUserRole(
       userId,
@@ -77,7 +99,20 @@ const updateUserRole = async (
   return user;
 };
 
-const deleteUser = async (userId) => {
+const deleteUser = async (
+  userId,
+  adminUserId,
+) => {
+  if (
+    userId.toString() ===
+    adminUserId.toString()
+  ) {
+    throw new ApiError(
+      400,
+      "You cannot delete your own account.",
+    );
+  }
+
   const user =
     await userRepository.deleteUser(
       userId,

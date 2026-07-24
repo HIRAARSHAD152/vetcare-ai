@@ -78,11 +78,12 @@ const changeUserStatus = asyncHandler(
   async (req, res) => {
     const { isActive } = req.body;
 
-    const user =
-      await updateUserStatus(
-        req.params.userId,
-        isActive,
-      );
+ const user =
+  await updateUserStatus(
+    req.params.userId,
+    isActive,
+    req.user._id,
+  );
 
     return successResponse(res, {
       statusCode: 200,
@@ -100,11 +101,13 @@ const changeUserRole = asyncHandler(
   async (req, res) => {
     const { role } = req.body;
 
+   
     const user =
-      await updateUserRole(
-        req.params.userId,
-        role,
-      );
+  await updateUserRole(
+    req.params.userId,
+    role,
+    req.user._id,
+  );
 
     return successResponse(res, {
       statusCode: 200,
@@ -119,8 +122,9 @@ const changeUserRole = asyncHandler(
 const removeUser = asyncHandler(
   async (req, res) => {
     await deleteUser(
-      req.params.userId,
-    );
+  req.params.userId,
+  req.user._id,
+);
 
     return successResponse(res, {
       statusCode: 200,
