@@ -219,6 +219,95 @@ async activateAccount(userId) {
   );
 }
 
+async findAllUsers({
+  page = 1,
+  limit = 10,
+  search,
+  role,
+  isActive,
+}) {
+  const filter = {};
+
+  if (search) {
+    filter.$or = [
+      {
+        name: {
+          $regex: search,
+          $options: "i",
+        },
+      },
+      {
+        email: {
+          $regex: search,
+          $options: "i",
+        },
+      },
+    ];
+  }
+
+  if (role) {
+    filter.role = role;
+  }
+
+  if (typeof isActive === "boolean") {
+    filter.isActive = isActive;
+  }
+
+  const skip = (page - 1) * limit;
+
+  const [users, total] =
+    await Promise.all([
+      this.model
+        .find(filter)
+        .select(
+          "-password -refreshToken",
+        )
+        .sort({
+          createdAt: -1,
+        })
+        .skip(skip)
+        .limit(limit),
+
+      this.model.countDocuments(filter),
+    ]);
+
+  return {
+    users,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(
+      total / limit,
+    ),
+  };
+}
+
+async updateUserStatus(userId, isActive) {
+  return this.model.findByIdAndUpdate(
+    userId,
+    { isActive },
+    {
+      returnDocument: "after",
+      runValidators: true,
+    },
+  ).select("-password -refreshToken");
+}
+
+async updateUserRole(userId, role) {
+  return this.model.findByIdAndUpdate(
+    userId,
+    { role },
+    {
+      returnDocument: "after",
+      runValidators: true,
+    },
+  ).select("-password -refreshToken");
+}
+
+async deleteUser(userId) {
+  return this.model.findByIdAndDelete(userId);
+}
+
 }
 
 const userRepository = new UserRepository();
