@@ -225,6 +225,8 @@ async findAllUsers({
   search,
   role,
   isActive,
+  sortBy = "createdAt",
+  sortOrder = "desc",
 }) {
   const filter = {};
 
@@ -253,6 +255,22 @@ async findAllUsers({
     filter.isActive = isActive;
   }
 
+  const allowedSortFields = [
+    "createdAt",
+    "updatedAt",
+    "name",
+    "email",
+    "lastLoginAt",
+  ];
+
+  const safeSortBy =
+    allowedSortFields.includes(sortBy)
+      ? sortBy
+      : "createdAt";
+
+  const safeSortOrder =
+    sortOrder === "asc" ? 1 : -1;
+
   const skip = (page - 1) * limit;
 
   const [users, total] =
@@ -263,10 +281,11 @@ async findAllUsers({
           "-password -refreshToken",
         )
         .sort({
-          createdAt: -1,
+          [safeSortBy]: safeSortOrder,
         })
         .skip(skip)
-        .limit(limit),
+        .limit(limit)
+        .lean(),
 
       this.model.countDocuments(filter),
     ]);

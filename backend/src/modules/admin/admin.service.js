@@ -7,6 +7,8 @@ const getAllUsers = async ({
   search,
   role,
   isActive,
+  sortBy,
+  sortOrder,
 }) => {
   return userRepository.findAllUsers({
     page,
@@ -14,6 +16,8 @@ const getAllUsers = async ({
     search,
     role,
     isActive,
+    sortBy,
+    sortOrder,
   });
 };
 

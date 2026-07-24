@@ -17,23 +17,41 @@ const getUsers = asyncHandler(
       search,
       role,
       isActive,
+      sortBy = "createdAt",
+      sortOrder = "desc",
     } = req.query;
+
+    const safePage = Math.max(
+      Number(page) || 1,
+      1,
+    );
+
+    const safeLimit = Math.min(
+      Math.max(
+        Number(limit) || 10,
+        1,
+      ),
+      100,
+    );
 
     const result =
       await getAllUsers({
-        page: Number(page),
-        limit: Number(limit),
+        page: safePage,
+        limit: safeLimit,
         search,
         role,
         isActive:
           isActive === undefined
             ? undefined
             : isActive === "true",
+        sortBy,
+        sortOrder,
       });
 
     return successResponse(res, {
       statusCode: 200,
-      message: "Users fetched successfully.",
+      message:
+        "Users fetched successfully.",
       data: result,
     });
   },

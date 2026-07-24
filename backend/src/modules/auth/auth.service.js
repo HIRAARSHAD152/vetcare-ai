@@ -1,5 +1,6 @@
 import ApiError from "../../utils/ApiError.js";
 import {
+  generateToken,
   generateAccessToken,
   generateRefreshToken,
   verifyToken
