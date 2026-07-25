@@ -327,6 +327,80 @@ async deleteUser(userId) {
   return this.model.findByIdAndDelete(userId);
 }
 
+async getDashboardStats() {
+  const [
+    totalUsers,
+    activeUsers,
+    inactiveUsers,
+    verifiedUsers,
+    unverifiedUsers,
+    usersByRole,
+    recentUsers,
+  ] = await Promise.all([
+    this.model.countDocuments(),
+
+    this.model.countDocuments({
+      isActive: true,
+    }),
+
+    this.model.countDocuments({
+      isActive: false,
+    }),
+
+    this.model.countDocuments({
+      isVerified: true,
+    }),
+
+    this.model.countDocuments({
+      isVerified: false,
+    }),
+
+    this.model.aggregate([
+      {
+        $group: {
+          _id: "$role",
+          count: {
+            $sum: 1,
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          role: "$_id",
+          count: 1,
+        },
+      },
+      {
+        $sort: {
+          role: 1,
+        },
+      },
+    ]),
+
+    this.model
+      .find()
+      .select(
+        "-password -refreshToken",
+      )
+      .sort({
+        createdAt: -1,
+      })
+      .limit(5)
+      .lean(),
+  ]);
+
+  return {
+    totalUsers,
+    activeUsers,
+    inactiveUsers,
+    verifiedUsers,
+    unverifiedUsers,
+    usersByRole,
+    recentUsers,
+  };
+}
+
 }
 
 const userRepository = new UserRepository();

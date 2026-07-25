@@ -7,7 +7,8 @@ import {
    updateUserStatus,
   updateUserRole,
   deleteUser,
-  getAuditLogs
+  getAuditLogs,
+  getDashboardStats
 } from "./admin.service.js";
 
 const getUsers = asyncHandler(
@@ -172,11 +173,26 @@ const getLogs = asyncHandler(
   },
 );
 
+const getDashboard = asyncHandler(
+  async (req, res) => {
+    const stats =
+      await getDashboardStats();
+
+    return successResponse(res, {
+      statusCode: 200,
+      message:
+        "Dashboard statistics fetched successfully.",
+      data: stats,
+    });
+  },
+);
+
 export {
   getUsers,
   getUser,
   changeUserStatus,
   changeUserRole,
   removeUser,
-  getLogs
+  getLogs,
+  getDashboard
 };

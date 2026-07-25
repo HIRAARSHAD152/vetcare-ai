@@ -75,9 +75,13 @@ const findAll = async ({
   };
 };
 
+const getRecentAuditLogsCount = async () => {
+  return AuditLog.countDocuments();
+};
 
 export {
   createAuditLog,
   findByTargetUser,
-  findAll
+  findAll,
+  getRecentAuditLogsCount
 };
