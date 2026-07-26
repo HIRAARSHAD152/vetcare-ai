@@ -401,6 +401,52 @@ async getDashboardStats() {
   };
 }
 
+async getUserRegistrationStats() {
+  const now = new Date();
+
+  const last24Hours = new Date(
+    now.getTime() - 24 * 60 * 60 * 1000,
+  );
+
+  const last7Days = new Date(
+    now.getTime() - 7 * 24 * 60 * 60 * 1000,
+  );
+
+  const last30Days = new Date(
+    now.getTime() - 30 * 24 * 60 * 60 * 1000,
+  );
+
+  const [
+    last24HoursUsers,
+    last7DaysUsers,
+    last30DaysUsers,
+  ] = await Promise.all([
+    this.model.countDocuments({
+      createdAt: {
+        $gte: last24Hours,
+      },
+    }),
+
+    this.model.countDocuments({
+      createdAt: {
+        $gte: last7Days,
+      },
+    }),
+
+    this.model.countDocuments({
+      createdAt: {
+        $gte: last30Days,
+      },
+    }),
+  ]);
+
+  return {
+    last24HoursUsers,
+    last7DaysUsers,
+    last30DaysUsers,
+  };
+}
+
 }
 
 const userRepository = new UserRepository();

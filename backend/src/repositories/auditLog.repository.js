@@ -79,9 +79,56 @@ const getRecentAuditLogsCount = async () => {
   return AuditLog.countDocuments();
 };
 
+const getAuditActivityStats = async () => {
+  const now = new Date();
+
+  const last24Hours = new Date(
+    now.getTime() - 24 * 60 * 60 * 1000,
+  );
+
+  const last7Days = new Date(
+    now.getTime() - 7 * 24 * 60 * 60 * 1000,
+  );
+
+  const last30Days = new Date(
+    now.getTime() - 30 * 24 * 60 * 60 * 1000,
+  );
+
+  const [
+    last24HoursLogs,
+    last7DaysLogs,
+    last30DaysLogs,
+  ] = await Promise.all([
+    AuditLog.countDocuments({
+      createdAt: {
+        $gte: last24Hours,
+      },
+    }),
+
+    AuditLog.countDocuments({
+      createdAt: {
+        $gte: last7Days,
+      },
+    }),
+
+    AuditLog.countDocuments({
+      createdAt: {
+        $gte: last30Days,
+      },
+    }),
+  ]);
+
+  return {
+    last24HoursLogs,
+    last7DaysLogs,
+    last30DaysLogs,
+  };
+};
+
 export {
   createAuditLog,
   findByTargetUser,
   findAll,
-  getRecentAuditLogsCount
+  getRecentAuditLogsCount,
+  getAuditActivityStats
 };

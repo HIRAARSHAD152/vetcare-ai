@@ -1,6 +1,6 @@
 import ApiError from "../../utils/ApiError.js";
 import userRepository from "../../repositories/user.repository.js";
-import {   createAuditLog, findAll as findAllAuditLogs , getRecentAuditLogsCount} from "../../repositories/auditLog.repository.js";
+import {   createAuditLog, findAll as findAllAuditLogs , getRecentAuditLogsCount , getAuditActivityStats} from "../../repositories/auditLog.repository.js";
 
 const getAllUsers = async ({
   page,
@@ -170,13 +170,22 @@ const getDashboardStats = async () => {
   const [
     userStats,
     recentAuditLogs,
+    userRegistrationStats,
+    auditActivityStats,
   ] = await Promise.all([
     userRepository.getDashboardStats(),
     getRecentAuditLogsCount(),
+    userRepository.getUserRegistrationStats(),
+    getAuditActivityStats(),
   ]);
 
   return {
     ...userStats,
+
+    userRegistrationStats,
+
+    auditActivityStats,
+
     recentAuditLogs,
   };
 };
