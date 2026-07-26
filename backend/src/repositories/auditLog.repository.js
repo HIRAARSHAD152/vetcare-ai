@@ -150,12 +150,57 @@ const getActionBreakdown = async () => {
   ]);
 };
 
+const getDailyActivity = async (
+  days = 7,
+) => {
+  const startDate = new Date();
+
+  startDate.setDate(
+    startDate.getDate() - days,
+  );
+
+  return AuditLog.aggregate([
+    {
+      $match: {
+        createdAt: {
+          $gte: startDate,
+        },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          $dateToString: {
+            format: "%Y-%m-%d",
+            date: "$createdAt",
+          },
+        },
+        count: {
+          $sum: 1,
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        date: "$_id",
+        count: 1,
+      },
+    },
+    {
+      $sort: {
+        date: 1,
+      },
+    },
+  ]);
+};
+
 export {
   createAuditLog,
   findByTargetUser,
   findAll,
   getRecentAuditLogsCount,
   getAuditActivityStats,
-  getActionBreakdown
-
+  getActionBreakdown,
+  getDailyActivity
 };
