@@ -125,10 +125,37 @@ const getAuditActivityStats = async () => {
   };
 };
 
+const getActionBreakdown = async () => {
+  return AuditLog.aggregate([
+    {
+      $group: {
+        _id: "$action",
+        count: {
+          $sum: 1,
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        action: "$_id",
+        count: 1,
+      },
+    },
+    {
+      $sort: {
+        count: -1,
+      },
+    },
+  ]);
+};
+
 export {
   createAuditLog,
   findByTargetUser,
   findAll,
   getRecentAuditLogsCount,
-  getAuditActivityStats
+  getAuditActivityStats,
+  getActionBreakdown
+
 };
